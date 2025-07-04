@@ -10,18 +10,17 @@ app.set('views', __dirname + '/views');
 
 app.get('/', async (req, res) => {
   try {
-    // URL המקורי של הפודקאסט
-    const targetFeed = 'https://feed.podbean.com/theanswer/feed.xml';
+    // כתובת ה־RSS של הפודקאסט
+    const feedUrl = 'https://feed.podbean.com/theanswer/feed.xml';
 
-    // פרוקסי לעקיפת חסימות CORS
-    const proxyUrl = 'https://api.allorigins.win/get?url=' + encodeURIComponent(targetFeed);
+    // שימוש בפרוקסי ציבורי כדי לעקוף מגבלות CORS
+    const proxyUrl = 'https://api.allorigins.win/get?url=' + encodeURIComponent(feedUrl);
 
-    // משיכת הפיד דרך הפרוקסי
     const response = await fetch(proxyUrl);
     const json = await response.json();
     const xml = json.contents;
 
-    console.log('📥 פיד נטען בהצלחה (אורך:', xml.length, ')');
+    console.log('🔵 XML loaded, length:', xml.length);
 
     xml2js.parseString(xml, (err, result) => {
       if (err) {
@@ -30,16 +29,15 @@ app.get('/', async (req, res) => {
       }
 
       try {
-        console.log('🔍 מבנה JSON שהתקבל מה־XML:', JSON.stringify(result, null, 2));
+        console.log('🔍 JSON:', JSON.stringify(result, null, 2));
 
-        // נוודא שקיים result.rss.channel[0].item
-        const items = result?.rss?.channel?.[0]?.item;
-        if (!items || !Array.isArray(items)) {
-          console.error('⚠️ לא נמצאו פרקים בפיד');
-          return res.status(500).send('לא נמצאו פרקים בפיד');
+        const channel = result?.rss?.channel?.[0];
+        if (!channel || !Array.isArray(channel.item)) {
+          console.error('⚠️ מבנה לא צפוי: אין channel.item');
+          return res.status(500).send('מבנה לא צפוי בפיד');
         }
 
-        const episodes = items.slice(0, 10).map(entry => ({
+        const episodes = channel.item.slice(0, 10).map(entry => ({
           title: entry.title?.[0] || 'ללא כותרת',
           description: entry.description?.[0] || '',
           audio: entry.enclosure?.[0]?.$?.url || ''
