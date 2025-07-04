@@ -10,15 +10,11 @@ app.set('views', __dirname + '/views');
 
 app.get('/', async (req, res) => {
   try {
-    // כתובת ה־RSS של הפודקאסט
     const feedUrl = 'https://feed.podbean.com/theanswer/feed.xml';
 
-    // שימוש בפרוקסי ציבורי כדי לעקוף מגבלות CORS
-    const proxyUrl = 'https://api.allorigins.win/get?url=' + encodeURIComponent(feedUrl);
-
-    const response = await fetch(proxyUrl);
-    const json = await response.json();
-    const xml = json.contents;
+    // שליפה ישירה ללא פרוקסי
+    const response = await fetch(feedUrl);
+    const xml = await response.text();
 
     console.log('🔵 XML loaded, length:', xml.length);
 
@@ -29,12 +25,10 @@ app.get('/', async (req, res) => {
       }
 
       try {
-        console.log('🔍 JSON:', JSON.stringify(result, null, 2));
-
         const channel = result?.rss?.channel?.[0];
         if (!channel || !Array.isArray(channel.item)) {
           console.error('⚠️ מבנה לא צפוי: אין channel.item');
-          return res.status(500).send('מבנה לא צפוי בפיד');
+          return res.status(500).send('לא נמצאו פרקים בפיד');
         }
 
         const episodes = channel.item.slice(0, 10).map(entry => ({
