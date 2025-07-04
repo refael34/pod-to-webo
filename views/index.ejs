@@ -2,36 +2,26 @@
 <html lang="he">
 <head>
   <meta charset="UTF-8">
-  <title>התשובה – פרקים אחרונים</title>
-  <style>
-    body {
-      font-family: sans-serif;
-      direction: rtl;
-      text-align: right;
-      padding: 2em;
-      background-color: #f9f9f9;
-    }
-    .episode {
-      background: white;
-      margin-bottom: 1em;
-      padding: 1em;
-      border-radius: 8px;
-      box-shadow: 0 0 5px rgba(0,0,0,0.1);
-    }
-    audio {
-      width: 100%;
-      margin-top: 10px;
-    }
-  </style>
+  <title>פודקאסט: התשובה</title>
 </head>
 <body>
-  <h1>🎙️ פרקים אחרונים מתוך "התשובה"</h1>
-  <% episodes.forEach(ep => { %>
-    <div class="episode">
-      <h2><%= ep.title %></h2>
-      <p><%= ep.description %></p>
-      <audio controls src="<%= ep.audio %>"></audio>
-    </div>
-  <% }) %>
+  <h1>פרקים אחרונים - התשובה</h1>
+  <% if (episodes.length === 0) { %>
+    <p>לא נמצאו פרקים</p>
+  <% } else { %>
+    <ul>
+      <% episodes.forEach(episode => { %>
+        <li>
+          <h3><%= episode.title %></h3>
+          <p><%= episode.description %></p>
+          <% if (episode.audio) { %>
+            <audio controls src="<%= episode.audio %>"></audio>
+          <% } else { %>
+            <p>אין קובץ שמע זמין</p>
+          <% } %>
+        </li>
+      <% }) %>
+    </ul>
+  <% } %>
 </body>
 </html>
