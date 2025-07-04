@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="he">
+<head>
+  <meta charset="UTF-8">
+  <title>התשובה – פרקים אחרונים</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      direction: rtl;
+      text-align: right;
+      padding: 2em;
+      background-color: #f9f9f9;
+    }
+    .episode {
+      background: white;
+      margin-bottom: 1em;
+      padding: 1em;
+      border-radius: 8px;
+      box-shadow: 0 0 5px rgba(0,0,0,0.1);
+    }
+    audio {
+      width: 100%;
+      margin-top: 10px;
+    }
+  </style>
+</head>
+<body>
+  <h1>🎙️ פרקים אחרונים מתוך "התשובה"</h1>
+  <% episodes.forEach(ep => { %>
+    <div class="episode">
+      <h2><%= ep.title %></h2>
+      <p><%= ep.description %></p>
+      <audio controls src="<%= ep.audio %>"></audio>
+    </div>
+  <% }) %>
+</body>
+</html>
