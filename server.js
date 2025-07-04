@@ -10,15 +10,18 @@ app.set('views', __dirname + '/views');
 
 app.get('/', async (req, res) => {
   try {
-    // משתמשים בפרוקסי כדי לעקוף חסימות
+    // URL המקורי של הפודקאסט
     const targetFeed = 'https://feed.podbean.com/theanswer/feed.xml';
+
+    // פרוקסי לעקיפת חסימות CORS
     const proxyUrl = 'https://api.allorigins.win/get?url=' + encodeURIComponent(targetFeed);
+
+    // משיכת הפיד דרך הפרוקסי
     const response = await fetch(proxyUrl);
     const json = await response.json();
     const xml = json.contents;
 
-    // נכניס לוג למקרה שנרצה לבדוק את הפלט
-    console.log('🔵 XML loaded, length:', xml.length);
+    console.log('📥 פיד נטען בהצלחה (אורך:', xml.length, ')');
 
     xml2js.parseString(xml, (err, result) => {
       if (err) {
@@ -27,15 +30,24 @@ app.get('/', async (req, res) => {
       }
 
       try {
-        const items = result.rss.channel[0].item.slice(0, 10).map(entry => ({
-          title: entry.title[0],
-          description: entry.description[0],
-          audio: entry.enclosure[0].$.url
+        console.log('🔍 מבנה JSON שהתקבל מה־XML:', JSON.stringify(result, null, 2));
+
+        // נוודא שקיים result.rss.channel[0].item
+        const items = result?.rss?.channel?.[0]?.item;
+        if (!items || !Array.isArray(items)) {
+          console.error('⚠️ לא נמצאו פרקים בפיד');
+          return res.status(500).send('לא נמצאו פרקים בפיד');
+        }
+
+        const episodes = items.slice(0, 10).map(entry => ({
+          title: entry.title?.[0] || 'ללא כותרת',
+          description: entry.description?.[0] || '',
+          audio: entry.enclosure?.[0]?.$?.url || ''
         }));
 
-        res.render('index', { episodes: items });
+        res.render('index', { episodes });
       } catch (innerErr) {
-        console.error('❌ שגיאה בהוצאת המידע מה־JSON:', innerErr);
+        console.error('❌ שגיאה בטיפול בפרקים:', innerErr);
         res.status(500).send('שגיאה בטיפול בפרקים');
       }
     });
@@ -46,5 +58,5 @@ app.get('/', async (req, res) => {
 });
 
 app.listen(PORT, () => {
-  console.log(`🚀 Server running on port ${PORT}`);
+  console.log(`🚀 השרת רץ על פורט ${PORT}`);
 });
